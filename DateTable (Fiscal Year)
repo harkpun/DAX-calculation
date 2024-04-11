@@ -1,0 +1,25 @@
+DateTable =
+    VAR fiscal = CALENDARAUTO(3)                      // Use CALENDARAUTO to generate a date table based on the current data model's range (date start from April)
+  
+    VAR add_columns =                                 // Use ADDCOLUMNS to add custom columns to the date table
+        ADDCOLUMNS(
+            fiscal,
+            "Day", DAY([Date]),                       // Add a column for the day of the month
+            "Weekday", FORMAT([Date], "ddd"),         // Add a column for the weekday name (e.g., Mon, Tue, etc.)
+            "Month", FORMAT([Date], "mmm"),           // Add a column for the month name (e.g., Jan, Feb, etc.)
+            "Month Sort", MONTH(EDATE([Date], -3)),   // Add a column for the month number for sorting purposes (fiscal year starts in April)
+            "Qtr", "Q" & QUARTER(EDATE([Date], -3)),  // Add a column for the quarter (e.g., Q1, Q2, etc.)
+            "Fiscal_year",                            // Add a column for the fiscal year (e.g., FY22-23) based on the fiscal year starting in April
+                VAR CY = RIGHT(YEAR([Date]), 2)       // Current year
+                VAR NY = RIGHT(YEAR([Date]) + 1, 2)   // Next year
+                VAR LY = RIGHT(YEAR([Date]) - 1, 2)   // Last year
+            RETURN
+                IF(
+                    MONTH([Date]) >= 4,               // If the month is April or later, it's in the current fiscal year
+                    CY & "-" & NY,
+                    LY & "-" & CY                     // Otherwise, it's in the previous fiscal year
+                )
+        )
+  
+RETURN
+    add_columns                                      // Return the date table with the custom columns
